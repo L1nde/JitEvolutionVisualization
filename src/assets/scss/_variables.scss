@@ -1,0 +1,37 @@
+$primary: #c5c5c5;
+$primary-lighten: lighten($primary, 15%);
+$secondary: #097b05;
+$tertiary: #892cdc;
+$bg: #d3d3d3;
+$text: black;
+
+$text-primary: $text;
+$body-bg: $bg;
+$body-color: $text;
+$modal-content-color: $text;
+$modal-content-bg: lighten($body-bg, 5%);
+$card-bg: lighten($body-bg, 5%);
+$card-cap-bg: mix($bg, $secondary, 50%);
+$card-color: $text;
+$card-border-color: $secondary;
+$input-bg: lighten($body-bg, 35%);
+$input-border-color: lighten($body-bg, 25%);
+$input-color: $text;
+$input-disabled-bg: lighten($body-bg, 30%);
+$nav-tabs-border-color: lighten($body-bg, 30%);
+
+$theme-colors: (
+  "transparent": transparent
+);
+
+$theme-colors: (
+  "bg": $bg,
+  "primary-lighten": $primary-lighten
+);
+
+$enable-gradients: true;
+
+
+// Bootstrap and its default variables
+@import "node_modules/bootstrap/scss/bootstrap";
+@import "node_modules/bootstrap-vue/src/index.scss";
