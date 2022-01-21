@@ -10,6 +10,8 @@ const WEB_SOCKET_RECONNECT_MAX_ATTEMPTS = 12;
 
 enum Messages {
   UNAUTHENTICATED = 'Unauthenticated',
+  FILE_OPENED = 'FileOpened',
+  PROJECT_ADDED = 'ProjectAdded'
 }
 
 class State {
@@ -69,6 +71,16 @@ export default {
       connection.on(Messages.UNAUTHENTICATED, () => {
         // If the socket says we're unautheticated, notify and log out
         dispatch('onSocketFail');
+      });
+
+      connection.on(Messages.FILE_OPENED, (projectId, fileUri) => {
+        // If the socket says we're unautheticated, notify and log out
+        dispatch('live/focus', { projectId, fileUri}, {root:true});
+      });
+
+      connection.on(Messages.PROJECT_ADDED, () => {
+        // If the socket says we're unautheticated, notify and log out
+        dispatch('navbar/init', null, {root:true});
       });
 
       connection.onclose((error) => {

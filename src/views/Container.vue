@@ -2,7 +2,7 @@
   <div>
     <div class="l-page">
       <div class="l-content">
-        <!-- <app-nav-bar /> -->
+        <app-nav-bar />
         <div class="l-content__view">
           <router-view />
         </div>

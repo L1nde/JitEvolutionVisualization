@@ -51,6 +51,11 @@ export interface ClassDto {
     versionNUmber?: number;
 }
 
+export interface FileOpenedDto {
+    projectId?: string | null;
+    fileUri?: string | null;
+}
+
 export interface MethodDetailDto {
     id?: number;
     code?: string | null;
@@ -98,6 +103,12 @@ export interface PasswordLoginDto {
     password?: string | null;
 }
 
+export interface ProjectDto {
+    id?: string;
+    userId?: string;
+    projectId?: string | null;
+}
+
 export interface RegisterDto {
     username: string;
     password: string;
@@ -130,4 +141,9 @@ export interface VariableDetailDto {
     type?: string | null;
     usr?: string | null;
     versionNumber?: number;
+}
+
+export interface FileParameter {
+    data: any;
+    fileName: string;
 }

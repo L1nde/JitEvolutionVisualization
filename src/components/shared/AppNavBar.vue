@@ -1,6 +1,7 @@
 <template>
   <div>
     <b-navbar sticky toggleable="md" variant="primary">
+      <b-form-select v-model="$store.state.live.projectId" :options="$store.state.navbar.projectsOptions" @change="changeProject"></b-form-select>
       <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
       <b-collapse id="nav-collapse" is-nav>
         <b-navbar-nav class="ml-auto">
@@ -26,21 +27,27 @@
 </template>
 
 <script lang="ts">
+import API from "@/api";
+import { ProjectDto } from "@/models";
 import { routeMap } from "@/router";
-import { Component, Vue } from "vue-property-decorator";
-// import { Avatar } from "@/components/shared";
+import { Vue } from "vue-property-decorator";
 
-@Component({
-  components: {
-    // Avatar
+export default Vue.extend({
+  name: "NavBar",
+
+  data: () => ({
+  }),
+
+  methods: {
+    async logOut() {
+      await this.$store.dispatch("user/logout");
+      this.$router.push(routeMap.login.location);
+    },
+    async changeProject(value: string){
+      await this.$store.dispatch("live/changeProject", { projectId: value });
+    }
   }
 })
-export default class AppNavBar extends Vue {
-  private async logOut() {
-    await this.$store.dispatch("user/logout");
-    this.$router.push(routeMap.login.location);
-  }
-}
 </script>
 
 <style lang="scss">
