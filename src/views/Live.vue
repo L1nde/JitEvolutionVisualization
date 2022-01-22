@@ -144,6 +144,15 @@ export default Vue.extend({
       this.moveTo(selectedClass);
       return selectedClass;
     },
+    count () {
+      return this.$store.state.live.app;
+    }
+  },
+  watch: {
+    count (newCount, oldCount) {
+      // Our fancy notification (2).
+      this.createLinks();
+    }
   },
   methods: {
     moveTo(elementRef: string) {
