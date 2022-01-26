@@ -1,0 +1,43 @@
+name: Build
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        
+      - name: Login to Container Registry
+        uses: docker/login-action@v1 
+        with:
+          registry: ${{ secrets.REGISTRY_URL }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@a7fe6652db5c7274374844e81692992f5a2befb9
+        with:
+          context: .
+          tags: ${{ secrets.REGISTRY_URL }}/jit-evolution-visualization:latest
+          push: true
+  deploy:
+    needs: ["build"]
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: SSH Remote Commands
+      uses: appleboy/ssh-action@v0.1.4
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        key: ${{ secrets.SSH_KEY }}
+        script: docker-compose -f ~/jit-evolution-visualization/docker-compose.yml pull && docker-compose -f ~/jit-evolution-visualization/docker-compose.yml up -d
+        script_stop: true
