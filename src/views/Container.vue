@@ -19,8 +19,8 @@ import { AppFooter, AppNavBar } from "@/components/shared/";
 @Component({
   components: {
     AppFooter,
-    AppNavBar
-  }
+    AppNavBar,
+  },
 })
 export default class Container extends Vue {}
 </script>

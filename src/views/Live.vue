@@ -133,21 +133,25 @@ export default Vue.extend({
     links: [] as { start: Coordinate; end: Coordinate }[],
   }),
 
-  computed:{
+  computed: {
     selectedClass() {
-      const selectedClass = 'class-' + this.$store.state.live.app?.classes?.find((x: ClassDetailDto) => x.path?.endsWith(this.$store.state.live.fileUri))?.id;
+      const selectedClass =
+        "class-" +
+        this.$store.state.live.app?.classes?.find((x: ClassDetailDto) =>
+          x.path?.endsWith(this.$store.state.live.fileUri)
+        )?.id;
       this.moveTo(selectedClass);
       return selectedClass;
     },
-    count () {
+    count() {
       return this.$store.state.live.app;
-    }
+    },
   },
   watch: {
-    count (newCount, oldCount) {
+    count(newCount, oldCount) {
       // Our fancy notification (2).
       this.createLinks();
-    }
+    },
   },
   methods: {
     moveTo(elementRef: string): void {
@@ -183,12 +187,12 @@ export default Vue.extend({
                   this.$refs["method-" + call.start] &&
                   this.$refs["method-" + call.end]
                 ) {
-                  const rectStart =
-                    (this.$refs[
-                      "method-" + call.start
-                    ] as Element[])[0].getBoundingClientRect();
-                  const rectEnd =
-                    (this.$refs["method-" + call.end] as Element[])[0].getBoundingClientRect();
+                  const rectStart = (
+                    this.$refs["method-" + call.start] as Element[]
+                  )[0].getBoundingClientRect();
+                  const rectEnd = (
+                    this.$refs["method-" + call.end] as Element[]
+                  )[0].getBoundingClientRect();
                   this.links.push({
                     start: {
                       x: rectStart.left + rectStart.width,

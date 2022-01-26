@@ -13,7 +13,7 @@ export default abstract class BaseCrudApi<T> extends BaseApi {
   getAll(filters?: ApiFilter[], pageSize?: number) {
     const requestParams = {
       filters: filters ? serializeApiFilters(filters) : null,
-      pageSize: pageSize
+      pageSize: pageSize,
     } as RequestParams;
 
     return this._get<T[]>(this.baseRoute, { params: requestParams });

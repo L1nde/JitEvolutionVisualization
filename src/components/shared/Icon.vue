@@ -2,15 +2,18 @@
   <span
     v-if="name"
     class="icon"
-    v-bind:class="{ 'icon--clickable': isClickable && !disabled, 'is-disabled': disabled }"
+    v-bind:class="{
+      'icon--clickable': isClickable && !disabled,
+      'is-disabled': disabled,
+    }"
     v-on="$listeners"
   >
     <b-icon :icon="name"></b-icon>
   </span>
 </template>
 <script lang="ts">
-import Vue from 'vue';
-import Component from 'vue-class-component';
+import Vue from "vue";
+import Component from "vue-class-component";
 
 @Component({
   props: {
@@ -22,7 +25,7 @@ import Component from 'vue-class-component';
     disabled: {
       type: Boolean,
       default: false,
-    }
+    },
   },
 })
 export default class Icon extends Vue {
@@ -35,7 +38,7 @@ export default class Icon extends Vue {
 }
 </script>
 <style lang="scss" scoped>
-@import '@/assets/scss/_variables.scss';
+@import "@/assets/scss/_variables.scss";
 .icon {
   color: var(--style-icon-color, inherit);
 

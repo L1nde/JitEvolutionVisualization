@@ -14,8 +14,7 @@ class State {
 export default {
   namespaced: true,
   state: new State(),
-  getters: {
-  },
+  getters: {},
   mutations: {
     login(state: State, user: UserTokenDto) {
       state.user = user.user;
@@ -27,7 +26,7 @@ export default {
     },
     reset(state: State) {
       Object.assign(state, new State());
-    }
+    },
   },
   actions: {
     async init({ commit, dispatch }) {
@@ -41,7 +40,7 @@ export default {
           if (isExpired) {
             return dispatch("logout");
           }
-          await dispatch('websocket/connectSocket', token, { root: true });
+          await dispatch("websocket/connectSocket", token, { root: true });
           commit("login", { user, token });
         } catch {
           return dispatch("logout");
@@ -51,13 +50,13 @@ export default {
     async login({ commit, dispatch }, body: PasswordLoginDto) {
       const { user, token } = await API.user.login(body);
       await localforage.setItem("user", { user, token });
-      await dispatch('websocket/connectSocket', token, { root: true });
+      await dispatch("websocket/connectSocket", token, { root: true });
       commit("login", { user, token });
     },
     async logout({ commit, dispatch }) {
       await localforage.clear();
-      await dispatch('websocket/disconnectSocket', {}, { root: true });
+      await dispatch("websocket/disconnectSocket", {}, { root: true });
       commit("logout");
-    }
-  }
+    },
+  },
 } as Module<State, RootState>;

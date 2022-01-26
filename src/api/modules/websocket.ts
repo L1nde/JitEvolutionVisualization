@@ -1,4 +1,8 @@
-import { HubConnection, HubConnectionBuilder, HubConnectionState } from '@microsoft/signalr';
+import {
+  HubConnection,
+  HubConnectionBuilder,
+  HubConnectionState,
+} from "@microsoft/signalr";
 
 export default class WebsocketApi {
   private socketUri: string;
@@ -20,7 +24,7 @@ export default class WebsocketApi {
     if (this.connection) {
       await this.connection.stop();
     }
-    console.log(this.socketUri)
+    console.log(this.socketUri);
     this.connection = new HubConnectionBuilder()
       .withUrl(uri || this.socketUri, {
         accessTokenFactory: () => token,
@@ -30,7 +34,7 @@ export default class WebsocketApi {
   }
 
   async invoke(command: string, ...args: any[]) {
-    if (!this.connection) throw new TypeError('No websocket connection');
+    if (!this.connection) throw new TypeError("No websocket connection");
     // If the connection has dropped, try reconnecting before failing altogether
     if (this.connection.state === HubConnectionState.Disconnected) {
       // Intentionally has no try-catch, let it blow up

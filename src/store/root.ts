@@ -9,7 +9,7 @@ export default {
       if (state.readyResolver) {
         state.readyResolver(true);
       }
-    }
+    },
   },
   modules,
   actions: {
@@ -17,6 +17,6 @@ export default {
       await dispatch("user/init");
       await dispatch("navbar/init");
       commit("ready");
-    }
-  }
+    },
+  },
 } as StoreOptions<RootState>;

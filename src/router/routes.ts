@@ -6,7 +6,8 @@ export const routes = [
   {
     path: "/login",
     name: "login",
-    component: () => import(/* webpackChunkName: 'login' */ "@/views/Login.vue")
+    component: () =>
+      import(/* webpackChunkName: 'login' */ "@/views/Login.vue"),
   },
   {
     path: "/",
@@ -17,21 +18,19 @@ export const routes = [
         path: "/live",
         name: "live",
         component: () =>
-          import(
-            /* webpackChunkName: 'live' */ "@/views/Live.vue"
-          )
+          import(/* webpackChunkName: 'live' */ "@/views/Live.vue"),
       },
       // Default
       {
         path: "*",
         name: "live",
         component: () =>
-          import(/* webpackChunkName: 'live' */ "@/views/Live.vue")
-      }
-    ]
+          import(/* webpackChunkName: 'live' */ "@/views/Live.vue"),
+      },
+    ],
   },
   {
     path: "*",
-    redirect: "/"
-  }
+    redirect: "/",
+  },
 ] as RouteConfig[];

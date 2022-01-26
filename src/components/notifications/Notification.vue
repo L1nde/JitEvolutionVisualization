@@ -1,31 +1,22 @@
 <template>
-  <div
-    class="notification-component"
-    v-if="item"
-  >
+  <div class="notification-component" v-if="item">
     <!-- We reuse the default notification classes -->
     <div
       class="vue-notification-template vue-notification"
       v-bind:class="item.type"
       v-on:click="tryClose()"
     >
-      <icon
-        name="x"
-        v-on:click="tryClose(true)"
-      />
-      <div class="notification-title">{{item.title}}</div>
-      <div
-        class="notification-content"
-        v-if="item.text"
-      >{{item.text}}</div>
+      <icon name="x" v-on:click="tryClose(true)" />
+      <div class="notification-title">{{ item.title }}</div>
+      <div class="notification-content" v-if="item.text">{{ item.text }}</div>
     </div>
   </div>
 </template>
 <script lang="ts">
-import Vue from 'vue';
-import Component from 'vue-class-component';
+import Vue from "vue";
+import Component from "vue-class-component";
 
-import Icon from '@/components/shared/Icon.vue';
+import Icon from "@/components/shared/Icon.vue";
 
 @Component({
   props: {
@@ -45,7 +36,7 @@ import Icon from '@/components/shared/Icon.vue';
 })
 export default class Notification extends Vue {
   get isError() {
-    return this.$props.item.type === 'error';
+    return this.$props.item.type === "error";
   }
 
   tryClose(forceClose = false) {

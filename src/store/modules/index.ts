@@ -7,5 +7,5 @@ export default {
   user,
   websocket,
   live,
-  navbar
+  navbar,
 };

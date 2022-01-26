@@ -15,17 +15,19 @@ const API = new (class API {
     this.instance = axios.create({
       baseURL: baseRoute,
       headers: {
-        "Content-Type": "application/json"
-      }
+        "Content-Type": "application/json",
+      },
     });
 
-    this.websocket = new WebsocketApi(process.env.VUE_APP_JIT_EVOLUTION_WEBSOCKET_URI)
+    this.websocket = new WebsocketApi(
+      process.env.VUE_APP_JIT_EVOLUTION_WEBSOCKET_URI
+    );
     this.user = new UserApi(this.instance);
     this.app = new AppApi(this.instance);
   }
 
   public configureInterceptors(store: Store<any>) {
-    this.instance.interceptors.request.use(request => {
+    this.instance.interceptors.request.use((request) => {
       if (store.state.user.token && request.headers) {
         const token = store.state.user.token as string;
         request.headers.Authorization = `Bearer ${token}`;

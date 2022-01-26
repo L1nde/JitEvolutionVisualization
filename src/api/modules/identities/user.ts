@@ -9,6 +9,6 @@ export default class UserApi extends BaseCrudApi<UserDto> {
   }
 
   projects(userId: string) {
-    return this._get<ProjectDto[]>(`${this.baseRoute}/${userId}/project`)
+    return this._get<ProjectDto[]>(`${this.baseRoute}/${userId}/project`);
   }
 }

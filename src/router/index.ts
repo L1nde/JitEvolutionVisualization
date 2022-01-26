@@ -11,7 +11,7 @@ interface RouteMap {
 const router = new VueRouter({
   routes: routes,
   mode: "history",
-  base: process.env.BASE_URL
+  base: process.env.BASE_URL,
 });
 
 function mapRoutes(routeMap: RouteMap, routes: RouteConfig[]) {
@@ -21,7 +21,7 @@ function mapRoutes(routeMap: RouteMap, routes: RouteConfig[]) {
     if (name) {
       map[name] = Object.assign(
         {
-          name
+          name,
         },
         router.resolve({ name, path })
       );
