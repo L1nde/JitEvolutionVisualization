@@ -140,7 +140,7 @@ export default Vue.extend({
         this.$store.state.live.app?.classes?.find((x: ClassDetailDto) =>
           x.path?.endsWith(this.$store.state.live.fileUri)
         )?.id;
-      this.moveTo(selectedClass);
+      (this as any).moveTo(selectedClass);
       return selectedClass;
     },
     count() {
@@ -150,11 +150,11 @@ export default Vue.extend({
   watch: {
     count(newCount, oldCount) {
       // Our fancy notification (2).
-      this.createLinks();
+      (this as any).createLinks();
     },
   },
   methods: {
-    moveTo(elementRef: string): undefined {
+    moveTo(elementRef: string): any {
       const panzoom = this.$refs.panzoom as any;
       const panzoomInstance = panzoom?.$panZoomInstance;
       if (!this.$refs[elementRef]) return;
@@ -178,7 +178,7 @@ export default Vue.extend({
       }
       return;
     },
-    createLinks(): undefined {
+    createLinks(): any {
       this.$nextTick(() => {
         if (this.$store.state.live?.app?.classes) {
           for (const class1 of this.$store.state.live?.app?.classes) {
