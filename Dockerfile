@@ -3,6 +3,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
+RUN rm .env
 RUN npm run build
 
 FROM arm64v8/nginx:alpine as production-stage
