@@ -133,11 +133,6 @@ export default Vue.extend({
     links: [] as { start: Coordinate; end: Coordinate }[],
   }),
 
-  async mounted() {
-    if(this.$store.state.live.projectId){
-      this.createLinks();
-    }
-  },
   computed:{
     selectedClass() {
       const selectedClass = 'class-' + this.$store.state.live.app?.classes?.find((x: ClassDetailDto) => x.path?.endsWith(this.$store.state.live.fileUri))?.id;
@@ -155,7 +150,7 @@ export default Vue.extend({
     }
   },
   methods: {
-    moveTo(elementRef: string) {
+    moveTo(elementRef: string): void {
       const panzoom = this.$refs.panzoom as any;
       const panzoomInstance = panzoom?.$panZoomInstance;
       if (!this.$refs[elementRef]) return;
@@ -178,7 +173,7 @@ export default Vue.extend({
         panzoomInstance.resume();
       }
     },
-    createLinks() {
+    createLinks(): void {
       this.$nextTick(() => {
         if (this.$store.state.live?.app?.classes) {
           for (const class1 of this.$store.state.live?.app?.classes) {
@@ -189,11 +184,11 @@ export default Vue.extend({
                   this.$refs["method-" + call.end]
                 ) {
                   const rectStart =
-                    this.$refs[
+                    (this.$refs[
                       "method-" + call.start
-                    ][0].getBoundingClientRect();
+                    ] as Element[])[0].getBoundingClientRect();
                   const rectEnd =
-                    this.$refs["method-" + call.end][0].getBoundingClientRect();
+                    (this.$refs["method-" + call.end] as Element[])[0].getBoundingClientRect();
                   this.links.push({
                     start: {
                       x: rectStart.left + rectStart.width,
