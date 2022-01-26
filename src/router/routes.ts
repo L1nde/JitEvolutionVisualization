@@ -1,9 +1,6 @@
 import { RouteConfig } from "vue-router";
 
-export const baseRoute =
-  process.env.NODE_ENV === "production"
-    ? "https://dashboard-api.linde.ee/"
-    : "https://localhost:7259/"; // maybe move into environment file
+export const baseRoute = process.env.VUE_APP_JIT_EVOLUTION_API_URI;
 
 export const routes = [
   {
