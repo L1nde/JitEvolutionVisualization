@@ -23,7 +23,7 @@ jobs:
           password: ${{ secrets.REGISTRY_PASSWORD }}
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@a7fe6652db5c7274374844e81692992f5a2befb9
+        uses: docker/build-push-action@v2.8.0
         with:
           context: .
           tags: ${{ secrets.REGISTRY_URL }}/jit-evolution-visualization:latest
