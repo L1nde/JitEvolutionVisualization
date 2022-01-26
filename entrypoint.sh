@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 sed -i "s,%VUE_APP_JIT_EVOLUTION_WEBSOCKET_URI%,$VUE_APP_JIT_EVOLUTION_WEBSOCKET_URI,g" **/*.js
 sed -i "s,%VUE_APP_JIT_EVOLUTION_API_URI%,$VUE_APP_JIT_EVOLUTION_API_URI,g" **/*.js
 nginx -g 'daemon off;'
