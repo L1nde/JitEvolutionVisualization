@@ -3,7 +3,7 @@ import { Module } from "vuex";
 
 import API from "@/api";
 import router, { routeMap } from "@/router";
-import RootState from "@/store/rootState";
+import RootState from "@/store/rootstate";
 
 const WEB_SOCKET_RECONNECT_TIMEOUT = 5000;
 const WEB_SOCKET_RECONNECT_MAX_ATTEMPTS = 12;

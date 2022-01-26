@@ -154,7 +154,7 @@ export default Vue.extend({
     },
   },
   methods: {
-    moveTo(elementRef: string): void {
+    moveTo(elementRef: string): undefined {
       const panzoom = this.$refs.panzoom as any;
       const panzoomInstance = panzoom?.$panZoomInstance;
       if (!this.$refs[elementRef]) return;
@@ -176,8 +176,9 @@ export default Vue.extend({
 
         panzoomInstance.resume();
       }
+      return;
     },
-    createLinks(): void {
+    createLinks(): undefined {
       this.$nextTick(() => {
         if (this.$store.state.live?.app?.classes) {
           for (const class1 of this.$store.state.live?.app?.classes) {
@@ -209,6 +210,7 @@ export default Vue.extend({
           }
         }
       });
+      return;
     },
   },
 });

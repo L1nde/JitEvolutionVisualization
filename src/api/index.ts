@@ -20,7 +20,7 @@ const API = new (class API {
     });
 
     this.websocket = new WebsocketApi(
-      process.env.VUE_APP_JIT_EVOLUTION_WEBSOCKET_URI
+      process.env.VUE_APP_JIT_EVOLUTION_WEBSOCKET_URI ?? ""
     );
     this.user = new UserApi(this.instance);
     this.app = new AppApi(this.instance);
