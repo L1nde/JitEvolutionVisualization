@@ -1,52 +1,14 @@
 <template>
   <div>
-    <div class="panel" v-if="$store.state.live.app">
+    <div class="panel" v-if="app">
       <PanZoomComponent
         ref="panzoom"
         selector="#moveable-panel"
         :options="{ bounds: false, zoomSpeed: 0.05, transformOrigin: null }"
       >
         <div id="moveable-panel">
-          <!-- Todo: Fix width and height -->
-          <svg
-            width="10000%"
-            height="10000%"
-            style="position: absolute; top: 0; left: 0; z-index: 0"
-          >
-            <defs>
-              <marker
-                id="arrowhead"
-                markerWidth="5"
-                markerHeight="7"
-                refX="0"
-                refY="1.5"
-                orient="auto"
-              >
-                <polygon points="0 0, 5 1.5, 0 4" />
-              </marker>
-            </defs>
-            <line
-              v-for="link in links"
-              :key="
-                link.start.x +
-                ' ' +
-                link.end.x +
-                ' ' +
-                link.start.y +
-                ' ' +
-                link.end.y
-              "
-              :x1="link.start.x"
-              :y1="link.start.y"
-              :x2="link.end.x"
-              :y2="link.end.y"
-              stroke="black"
-              stroke-width="1"
-              marker-end="url(#arrowhead)"
-            />
-          </svg>
           <div
-            v-for="(classDetail, i) in $store.state.live.app.classes"
+            v-for="(classDetail, i) in app.classes"
             :style="{
               left: i * 350 + 'px',
               top: (i % 2 == 0 ? (-100 * i) / 2 : 350 - (100 * i) / 2) + 'px',
@@ -79,10 +41,18 @@
                     <b-card-text>
                       <ul class="class-content">
                         <li
-                          v-for="methodDetail in classDetail.variables"
-                          :key="methodDetail.id"
+                          v-for="variableDetail in classDetail.variables"
+                          :key="variableDetail.id"
                         >
-                          {{ methodDetail.name }}
+                          <span
+                            :style="{
+                              color: addedColor(
+                                app.addedOn,
+                                variableDetail.addedOn
+                              ),
+                            }"
+                            >{{ variableDetail.name }}</span
+                          >
                         </li>
                       </ul>
 
@@ -91,9 +61,23 @@
                         <li
                           v-for="methodDetail in classDetail.methods"
                           :key="methodDetail.id"
-                          :ref="'method-' + methodDetail.id"
+                          :ref="methodId(methodDetail.id)"
                         >
-                          {{ methodDetail.name }}
+                          <span
+                            :style="{
+                              color: addedColor(
+                                $store.state.live.app.addedOn,
+                                methodDetail.addedOn
+                              ),
+                            }"
+                            >{{ methodDetail.name }}</span
+                          >
+                          <relationship
+                            v-for="call in methodDetail.calls"
+                            :key="'method-' + methodDetail.id + '-' + call"
+                            :start="methodCoordinate(methodDetail.id)"
+                            :end="methodCoordinate(call)"
+                          />
                         </li>
                       </ul>
                     </b-card-text>
@@ -121,18 +105,34 @@ import Vue from "vue";
 import API from "@/api";
 import { AppDetailDto, ClassDetailDto } from "@/models";
 import PanZoomComponent from "@/components/pan-zoom/component.vue";
+import Relationship from "@/components/live/Relationship.vue";
+import * as d3 from "d3";
 
 export default Vue.extend({
   name: "Live",
 
   components: {
     PanZoomComponent,
+    Relationship,
   },
-
+  
   data: () => ({
-    links: [] as { start: Coordinate; end: Coordinate }[],
+    methodCoordinates: {} as { [id: string]: Coordinate },
+    recalculateRelationships: false,
+    gdp: [
+        {country: "USA", value: 20.5 },
+        {country: "China", value: 13.4 },
+        {country: "Germany", value: 4.0 },
+        {country: "Japan", value: 4.9 },
+        {country: "France", value: 2.8 }
+      ]
   }),
-
+  updated() {
+    if (this.recalculateRelationships) {
+      this.methodCoordinates = Object.assign({}, this.calculateRelationships());
+      this.recalculateRelationships = false;
+    }
+  },
   computed: {
     selectedClass() {
       const selectedClass =
@@ -143,17 +143,89 @@ export default Vue.extend({
       (this as any).moveTo(selectedClass);
       return selectedClass;
     },
-    count() {
+    app() {
+      this.generate();
       return this.$store.state.live.app;
     },
   },
   watch: {
-    count(newCount, oldCount) {
-      // Our fancy notification (2).
-      (this as any).createLinks();
+    app(newApp: AppDetailDto, oldApp: AppDetailDto) {
+      this.recalculateRelationships = true;
     },
   },
   methods: {
+    generate(){
+    const w = 500;
+      const h = 500;
+
+      const svg = d3
+        .select("#app")
+        .append("svg")
+        .attr("width", w)
+        .attr("height", h);
+
+      const sortedGDP = this.gdp.sort((a, b) => (a.value > b.value ? 1 : -1));
+      const color = d3.scaleOrdinal(d3.schemeDark2);
+
+      const max_gdp = d3.max(sortedGDP, o => o.value);
+
+      const angleScale = d3
+        .scaleLinear()
+        .domain([0, max_gdp])
+        .range([0, 1.5 * Math.PI]);
+
+      const arc = d3
+        .arc()
+        .innerRadius((d, i) => (i + 1) * 25)
+        .outerRadius((d, i) => (i + 2) * 25)
+        .startAngle(angleScale(0))
+        .endAngle(d => angleScale(d.value));
+
+      const g = svg.append("g");
+
+      g.selectAll("path")
+        .data(sortedGDP)
+        .enter()
+        .append("path")
+        .attr("d", arc)
+        .attr("fill", (d, i) => color(i))
+        .attr("stroke", "#FFF")
+        .attr("stroke-width", "1px")
+        .on("mouseenter", function() {
+          d3.select(this)
+            .transition()
+            .duration(200)
+            .attr("opacity", 0.5);
+        })
+        .on("mouseout", function() {
+          d3.select(this)
+            .transition()
+            .duration(200)
+            .attr("opacity", 1);
+        });
+
+      g.selectAll("text")
+        .data(this.gdp)
+        .enter()
+        .append("text")
+        .text(d => `${d.country} -  ${d.value} Trillion`)
+        .attr("x", -150)
+        .attr("dy", -8)
+        .attr("y", (d, i) => -(i + 1) * 25);
+
+      g.attr("transform", "translate(200,300)");
+
+      console.log(34)
+  },
+    methodCoordinate(id: string) {
+      return this.methodCoordinates[this.methodId(id)];
+    },
+    methodId(id: string) {
+      return "method-" + id;
+    },
+    addedColor(appVersion: number, version: number): string {
+      return `rgb(0, ${(version / appVersion) * 255}, 0)`;
+    },
     moveTo(elementRef: string): any {
       const panzoom = this.$refs.panzoom as any;
       const panzoomInstance = panzoom?.$panZoomInstance;
@@ -178,6 +250,24 @@ export default Vue.extend({
       }
       return;
     },
+    calculateRelationships() {
+      let relationships: { [id: string]: Coordinate } = {};
+      for (let class1 of this.app.classes!) {
+        for (let method of class1.methods!) {
+          let ref = this.$refs[this.methodId(method.id!)] as Element[];
+          if (ref && ref[0]) {
+            console.log(3);
+            let rect = ref[0].getBoundingClientRect();
+            relationships[this.methodId(method.id!)] = {
+              x: rect.left + rect.width,
+              y: rect.top + rect.height / 2,
+            };
+          }
+        }
+      }
+
+      return relationships;
+    },
     createLinks(): any {
       this.$nextTick(() => {
         if (this.$store.state.live?.app?.classes) {
@@ -194,16 +284,16 @@ export default Vue.extend({
                   const rectEnd = (
                     this.$refs["method-" + call.end] as Element[]
                   )[0].getBoundingClientRect();
-                  this.links.push({
-                    start: {
-                      x: rectStart.left + rectStart.width,
-                      y: rectStart.top + rectStart.height / 2,
-                    },
-                    end: {
-                      x: rectEnd.left,
-                      y: rectEnd.top + rectEnd.height / 2,
-                    },
-                  });
+                  // this.links.push({
+                  //   start: {
+                  //     x: rectStart.left + rectStart.width,
+                  //     y: rectStart.top + rectStart.height / 2,
+                  //   },
+                  //   end: {
+                  //     x: rectEnd.left,
+                  //     y: rectEnd.top + rectEnd.height / 2,
+                  //   },
+                  // });
                 }
               }
             }
@@ -220,7 +310,7 @@ export default Vue.extend({
   &-container {
     width: 300px;
     height: 50px;
-    position: relative;
+    position: absolute;
     border-top: 5px solid transparent;
     border-left: 5px solid transparent;
     border-right: 5px solid transparent;

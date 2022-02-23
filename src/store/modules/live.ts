@@ -22,9 +22,14 @@ export default {
     },
     changeProject(
       state: State,
-      body: { projectId: string; app: AppDetailDto }
+      body: { projectId: string; }
     ) {
       state.projectId = body.projectId;
+    },
+    saveApp(
+      state: State,
+      body: { app: AppDetailDto }
+    ) {
       state.app = body.app;
     },
   },
@@ -39,10 +44,16 @@ export default {
     },
     async changeProject({ commit, dispatch }, body: { projectId: string }) {
       commit("changeProject", {
-        projectId: body.projectId,
-        app: await API.app.get(body.projectId),
+        projectId: body.projectId
       });
+      await dispatch("loadProject");
       commit("focus", null);
     },
+    async loadProject({ commit, dispatch, state }) {
+      commit("saveApp", {
+        app: await API.app.get(state.projectId!),
+      });
+      commit("focus", null);
+    }
   },
 } as Module<State, RootState>;

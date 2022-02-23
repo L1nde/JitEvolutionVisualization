@@ -12,13 +12,14 @@ enum Messages {
   UNAUTHENTICATED = "Unauthenticated",
   FILE_OPENED = "FileOpened",
   PROJECT_ADDED = "ProjectAdded",
+
+  PROJECT_UPDATED = "ProjectUpdated",
 }
 
 class State {
   isPlannedClose = false;
   webSocketReconnectTimer: NodeJS.Timeout | null = null;
   webSocketReconnectAttempts = 0;
-  shipmentIdsToReload: string[] = [];
 }
 
 export default {
@@ -87,6 +88,11 @@ export default {
       connection.on(Messages.PROJECT_ADDED, () => {
         // If the socket says we're unautheticated, notify and log out
         dispatch("navbar/init", null, { root: true });
+      });
+
+      connection.on(Messages.PROJECT_UPDATED, () => {
+        // If the socket says we're unautheticated, notify and log out
+        dispatch("live/loadProject", null, { root: true });
       });
 
       connection.onclose((error) => {

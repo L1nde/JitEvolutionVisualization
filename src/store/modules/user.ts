@@ -52,6 +52,7 @@ export default {
       await localforage.setItem("user", { user, token });
       await dispatch("websocket/connectSocket", token, { root: true });
       commit("login", { user, token });
+      await dispatch("navbar/init", null, { root: true });
     },
     async logout({ commit, dispatch }) {
       await localforage.clear();
