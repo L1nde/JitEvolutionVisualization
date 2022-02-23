@@ -85,7 +85,7 @@ export interface MethodDetailDto {
     usr?: string | null;
     versionNumber?: number;
     addedOn?: number;
-    calls?: number[] | null;
+    calls?: string[] | null;
 }
 
 export interface MethodDto {

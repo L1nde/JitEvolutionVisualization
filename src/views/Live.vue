@@ -6,87 +6,7 @@
         selector="#moveable-panel"
         :options="{ bounds: false, zoomSpeed: 0.05, transformOrigin: null }"
       >
-        <div id="moveable-panel">
-          <div
-            v-for="(classDetail, i) in app.classes"
-            :style="{
-              left: i * 350 + 'px',
-              top: (i % 2 == 0 ? (-100 * i) / 2 : 350 - (100 * i) / 2) + 'px',
-            }"
-            :key="classDetail.id"
-            class="class-container"
-            :ref="'class-' + classDetail.id"
-            :class="{
-              'class-container__selected':
-                'class-' + classDetail.id === selectedClass,
-            }"
-          >
-            <div class="accordion" role="tablist">
-              <b-card no-body class="mb-1">
-                <b-card-header header-tag="header" class="p-1" role="tab">
-                  <b-button
-                    block
-                    v-b-toggle="'accordion-' + classDetail.id"
-                    variant="info"
-                    >{{ classDetail.name }}</b-button
-                  >
-                </b-card-header>
-                <b-collapse
-                  :id="'accordion-' + classDetail.id"
-                  visible
-                  :accordion="'accordion-' + classDetail.id"
-                  role="tabpanel"
-                >
-                  <b-card-body>
-                    <b-card-text>
-                      <ul class="class-content">
-                        <li
-                          v-for="variableDetail in classDetail.variables"
-                          :key="variableDetail.id"
-                        >
-                          <span
-                            :style="{
-                              color: addedColor(
-                                app.addedOn,
-                                variableDetail.addedOn
-                              ),
-                            }"
-                            >{{ variableDetail.name }}</span
-                          >
-                        </li>
-                      </ul>
-
-                      <hr />
-                      <ul class="class-content bullet-image">
-                        <li
-                          v-for="methodDetail in classDetail.methods"
-                          :key="methodDetail.id"
-                          :ref="methodId(methodDetail.id)"
-                        >
-                          <span
-                            :style="{
-                              color: addedColor(
-                                $store.state.live.app.addedOn,
-                                methodDetail.addedOn
-                              ),
-                            }"
-                            >{{ methodDetail.name }}</span
-                          >
-                          <relationship
-                            v-for="call in methodDetail.calls"
-                            :key="'method-' + methodDetail.id + '-' + call"
-                            :start="methodCoordinate(methodDetail.id)"
-                            :end="methodCoordinate(call)"
-                          />
-                        </li>
-                      </ul>
-                    </b-card-text>
-                  </b-card-body>
-                </b-collapse>
-              </b-card>
-            </div>
-          </div>
-        </div>
+        <div id="moveable-panel"></div>
       </PanZoomComponent>
       <!-- </div> -->
 
@@ -105,7 +25,6 @@ import Vue from "vue";
 import API from "@/api";
 import { AppDetailDto, ClassDetailDto } from "@/models";
 import PanZoomComponent from "@/components/pan-zoom/component.vue";
-import Relationship from "@/components/live/Relationship.vue";
 import * as d3 from "d3";
 
 export default Vue.extend({
@@ -113,19 +32,19 @@ export default Vue.extend({
 
   components: {
     PanZoomComponent,
-    Relationship,
+    //Relationship,
   },
-  
+
   data: () => ({
     methodCoordinates: {} as { [id: string]: Coordinate },
     recalculateRelationships: false,
     gdp: [
-        {country: "USA", value: 20.5 },
-        {country: "China", value: 13.4 },
-        {country: "Germany", value: 4.0 },
-        {country: "Japan", value: 4.9 },
-        {country: "France", value: 2.8 }
-      ]
+      { country: "USA", value: 20.5 },
+      { country: "China", value: 13.4 },
+      { country: "Germany", value: 4.0 },
+      { country: "Japan", value: 4.9 },
+      { country: "France", value: 2.8 },
+    ],
   }),
   updated() {
     if (this.recalculateRelationships) {
@@ -143,80 +62,238 @@ export default Vue.extend({
       (this as any).moveTo(selectedClass);
       return selectedClass;
     },
-    app() {
-      this.generate();
+    app(): AppDetailDto {
       return this.$store.state.live.app;
     },
   },
   watch: {
     app(newApp: AppDetailDto, oldApp: AppDetailDto) {
+      this.$nextTick(() => {
+        this.generate();
+      });
       this.recalculateRelationships = true;
     },
   },
   methods: {
-    generate(){
-    const w = 500;
-      const h = 500;
+    generate() {
+      const w = 50000;
+      const h = 50000;
+      const classSpaceX = 350;
+      const classSpaceY = 350;
+      const titleRowHeight = 30;
+      const rowHeight = 20;
+      const prependIconWidth = 20;
+      const prependIconHeight = 20;
 
+      const cornerRadius = 6;
+
+      const methodsCoordinates: {
+        [id: string]: { start: Coordinate; end: Coordinate };
+      } = {};
+
+      const methodsCalls: { startId: string; endId: string }[] = [];
+
+      d3.select("#moveable-panel").selectChildren().remove();
       const svg = d3
-        .select("#app")
+        .select("#moveable-panel")
         .append("svg")
         .attr("width", w)
         .attr("height", h);
 
-      const sortedGDP = this.gdp.sort((a, b) => (a.value > b.value ? 1 : -1));
-      const color = d3.scaleOrdinal(d3.schemeDark2);
+      for (const [i, class1] of this.app.classes!.entries()) {
+        const classWidth = 250;
+        const classHeight =
+          ((class1.variables?.length ?? 0) +
+            (class1.methods?.length ?? 0) +
+            1) *
+            rowHeight +
+          titleRowHeight;
 
-      const max_gdp = d3.max(sortedGDP, o => o.value);
+        const classX = i * classSpaceX + classWidth;
+        const classY = i % 2 == 0 ? 0 : classSpaceY;
 
-      const angleScale = d3
-        .scaleLinear()
-        .domain([0, max_gdp])
-        .range([0, 1.5 * Math.PI]);
+        const g = svg
+          .selectAll(`#class-${class1.id}`)
+          .data([class1])
+          .enter()
+          .append("g")
+          .attr("transform", `translate(${classX},${classY})`);
 
-      const arc = d3
-        .arc()
-        .innerRadius((d, i) => (i + 1) * 25)
-        .outerRadius((d, i) => (i + 2) * 25)
-        .startAngle(angleScale(0))
-        .endAngle(d => angleScale(d.value));
+        g.append("rect")
+          .style("fill", "#B2E7E8")
+          .attr("width", classWidth)
+          .attr("height", classHeight)
+          .attr("transform", `translate(0,0)`)
+          .attr("rx", cornerRadius)
+          .attr("ry", cornerRadius);
 
-      const g = svg.append("g");
+        g.append("text")
+          .text(function (d) {
+            return d.name!;
+          })
+          .style("fill", "black")
+          .style("font-size", "1.5rem")
+          .style("text-anchor", "middle")
+          .attr("transform", `translate(${classWidth / 2},${titleRowHeight})`);
 
-      g.selectAll("path")
-        .data(sortedGDP)
-        .enter()
-        .append("path")
-        .attr("d", arc)
-        .attr("fill", (d, i) => color(i))
-        .attr("stroke", "#FFF")
-        .attr("stroke-width", "1px")
-        .on("mouseenter", function() {
-          d3.select(this)
-            .transition()
-            .duration(200)
-            .attr("opacity", 0.5);
-        })
-        .on("mouseout", function() {
-          d3.select(this)
-            .transition()
-            .duration(200)
-            .attr("opacity", 1);
-        });
+        const gTitle = g
+          .selectAll(`#class-title-${class1.id}`)
+          .data([class1])
+          .enter()
+          .append("g")
+          .attr("transform", `translate(0,0)`);
 
-      g.selectAll("text")
-        .data(this.gdp)
-        .enter()
-        .append("text")
-        .text(d => `${d.country} -  ${d.value} Trillion`)
-        .attr("x", -150)
-        .attr("dy", -8)
-        .attr("y", (d, i) => -(i + 1) * 25);
+        gTitle
+          .append("rect")
+          .style("fill", "#8FB9AA")
+          .attr("width", classWidth)
+          .attr("height", titleRowHeight)
+          .attr("rx", cornerRadius)
+          .attr("ry", cornerRadius);
 
-      g.attr("transform", "translate(200,300)");
+        gTitle
+          .append("text")
+          .text(function (d) {
+            return d.name!;
+          })
+          .style("fill", "black")
+          .style("font-size", "1.5rem")
+          .style("text-anchor", "middle")
+          .attr("transform", `translate(${classWidth / 2},${titleRowHeight})`);
 
-      console.log(34)
-  },
+        for (const [i, variable] of class1.variables!.entries()) {
+          const gVariables = g
+            .selectAll(`#variable-${variable.id}`)
+            .data([variable])
+            .enter()
+            .append("g");
+
+          gVariables
+            .append("text")
+            .text(function (d) {
+              return d.name!;
+            })
+            .style("fill", "black")
+            .attr(
+              "transform",
+              "translate(" +
+                0 +
+                "," +
+                (rowHeight * (i + 1) + titleRowHeight) +
+                ")"
+            )
+            .on("mouseenter", function () {
+              d3.select(this)
+                .transition()
+                .duration(200)
+                .style("fill", "yellow");
+            })
+            .on("mouseout", function () {
+              d3.select(this).transition().duration(200).style("fill", "black");
+            });
+        }
+        const variablesCount = class1.variables?.length ?? 0;
+
+        for (const [i, method] of class1.methods!.entries()) {
+          const gMethods = g
+            .selectAll(`#method-${method.id}`)
+            .data([method])
+            .enter()
+            .append("g");
+
+          const coords = {
+            start: {
+              x: 0,
+              y: rowHeight * (i + 1 + variablesCount) + titleRowHeight,
+            },
+            end: {
+              x: 0 + 250,
+              y: rowHeight * (i + 1 + variablesCount) + titleRowHeight,
+            },
+          };
+
+          const absCoords = {
+            start: {
+              x: coords.start.x + classX,
+              y: coords.start.y + classY,
+            },
+            end: {
+              x: coords.end.x + classX,
+              y: coords.end.y + classY,
+            },
+          };
+
+          methodsCoordinates[method.id!] = absCoords;
+
+          gMethods
+            .append("image")
+            .attr("width", prependIconWidth)
+            .attr("height", prependIconHeight)
+            .attr(
+              "transform",
+              `translate(${coords.start.x}, ${coords.start.y - rowHeight / 2})`
+            )
+            .attr("xlink:href", "method.png");
+
+          gMethods
+            .append("text")
+            .text(function (d) {
+              return d.name!;
+            })
+            .style("fill", "black")
+            .attr("dominant-baseline", "central")
+            .attr(
+              "transform",
+              `translate(${coords.start.x + prependIconWidth}, ${
+                coords.start.y
+              })`
+            )
+            .on("mouseenter", function () {
+              d3.select(this)
+                .transition()
+                .duration(200)
+                .style("fill", "yellow");
+            })
+            .on("mouseout", function () {
+              d3.select(this).transition().duration(200).style("fill", "black");
+            });
+
+          for (const call of method.calls!) {
+            methodsCalls.push({ startId: method.id!, endId: call });
+          }
+        }
+      }
+
+      const gCalls = svg.selectAll(`#calls`).enter().append("g");
+
+      for (const call of methodsCalls) {
+        const start = methodsCoordinates[call.startId];
+        const end = methodsCoordinates[call.endId];
+        if (!start || !end) continue;
+
+        const c = 1;
+        const vectorX = end.end.x - start.start.x;
+        const vectorY = end.end.y - start.start.y;
+        const raise = -1 / (vectorY / vectorX);
+        const controlPoint = {
+          x: (2 * start.start.x + vectorX / 2) / 2 + c,
+          y: (2 * start.start.y + vectorY / 2) / 2 + c * raise,
+        };
+        svg
+          .append("path")
+          .style("stroke-width", "1")
+          .style("stroke", "black")
+          .attr("fill", "none")
+          .attr(
+            "d",
+            `M ${start.start.x},${start.start.y} Q ${controlPoint.x},${
+              controlPoint.y
+            } ${(end.end.x + start.start.x) / 2},${
+              (end.start.y + start.start.y) / 2
+            } T ${end.end.x},${end.end.y}`
+          );
+      }
+    },
     methodCoordinate(id: string) {
       return this.methodCoordinates[this.methodId(id)];
     },
@@ -268,40 +345,6 @@ export default Vue.extend({
 
       return relationships;
     },
-    createLinks(): any {
-      this.$nextTick(() => {
-        if (this.$store.state.live?.app?.classes) {
-          for (const class1 of this.$store.state.live?.app?.classes) {
-            if (class1.methodsCalls) {
-              for (const call of class1.methodsCalls) {
-                if (
-                  this.$refs["method-" + call.start] &&
-                  this.$refs["method-" + call.end]
-                ) {
-                  const rectStart = (
-                    this.$refs["method-" + call.start] as Element[]
-                  )[0].getBoundingClientRect();
-                  const rectEnd = (
-                    this.$refs["method-" + call.end] as Element[]
-                  )[0].getBoundingClientRect();
-                  // this.links.push({
-                  //   start: {
-                  //     x: rectStart.left + rectStart.width,
-                  //     y: rectStart.top + rectStart.height / 2,
-                  //   },
-                  //   end: {
-                  //     x: rectEnd.left,
-                  //     y: rectEnd.top + rectEnd.height / 2,
-                  //   },
-                  // });
-                }
-              }
-            }
-          }
-        }
-      });
-      return;
-    },
   },
 });
 </script>
@@ -331,7 +374,7 @@ export default Vue.extend({
 }
 
 .bullet-image {
-  list-style-image: url("~@/assets/images/method.png");
+  //list-style-image: url("~@/assets/images/method.png");
 }
 
 // #moveable-panel {
