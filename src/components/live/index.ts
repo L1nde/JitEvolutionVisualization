@@ -1,3 +1,3 @@
-import Relationship from "./Relationship.vue";
+import Class from "./Class.vue";
 
-export { Relationship };
+export { Class };
