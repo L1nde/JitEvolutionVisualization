@@ -1,97 +1,56 @@
 <template>
-  <div>
-    <div class="panel">
-      <PanZoomComponent
-        ref="panzoom"
-        selector="#moveable-panel"
-        :options="{ bounds: false, zoomSpeed: 0.05, transformOrigin: null }"
-      >
-        <div id="moveable-panel">
-          <app-svg :app="app" />
-        </div>
-      </PanZoomComponent>
-    </div>
-  </div>
+  <svg></svg>
 </template>
-
 <script lang="ts">
+import Vue from "vue";
+import * as d3 from "d3";
+import { AppDetailDto, ClassDetailDto } from "@/models";
+
 interface Coordinate {
   x: number;
   y: number;
 }
 
-import Vue from "vue";
-import API from "@/api";
-import { AppDetailDto, ClassDetailDto } from "@/models";
-import PanZoomComponent from "@/components/pan-zoom/component.vue";
-import * as d3 from "d3";
-import { AppSvg } from "@/components/live";
-
 export default Vue.extend({
-  name: "Live",
-
-  components: {
-    PanZoomComponent,
-    AppSvg
+  name: "app-svg",
+  props: {
+    app: {
+      type: Object as () => AppDetailDto
+    },
   },
-
+  components: {},
   data: () => ({
+    width: 50000,
+    height: 50000,
     classesMetaInfo: {} as {
       [id: string]: { coords: Coordinate; width: number; height: number };
     },
-    svg: {} as d3.Selection<SVGSVGElement, unknown, HTMLElement, any>,
   }),
-  computed: {
-    app(): AppDetailDto {
-      return this.$store.state.live.app;
-    },
-    fileUri(): string {
-      return this.$store.state.live.fileUri;
-    },
-  },
+  computed: {},
   watch: {
-    app(newApp: AppDetailDto, oldApp: AppDetailDto) {
-      d3.select("#moveable-panel").select("svg").selectChildren().remove();
-    },
-    fileUri(newFileUri: string, oldFileUri: string) {
-      const selectedClassId = this.classId(
-        this.$store.state.live.app?.classes?.find((x: ClassDetailDto) =>
-          x.path?.endsWith(this.$store.state.live.fileUri)
-        )?.id
-      );
-      this.moveTo(selectedClassId);
-    },
-  },
-  mounted() {
-    //       const w = 50000;
-    //   const h = 50000;
-
-    // d3.select("#moveable-panel").selectChildren().remove();
-    //   this.svg = d3
-    //     .select("#moveable-panel")
-    //     .append("svg")
-    //     .attr("width", w)
-    //     .attr("height", h);
-
-    //   this.svg
-    //     .append("defs")
-    //     .append("marker")
-    //     .attr("id", "arrow")
-    //     .attr("markerUnits", "strokeWidth")
-    //     .attr("refX", 6)
-    //     .attr("refY", 6)
-    //     .attr("markerWidth", 12)
-    //     .attr("markerHeight", 12)
-    //     .attr("viewBox", "0 0 12 12")
-    //     .attr("orient", "auto")
-    //     .append("path")
-    //     .attr("d", "M2,2 L10,6 L2,10 L6,6 L2,2")
-    //     .style("fill", "black");
-   
+    app(newApp, oldApp) {
+      if (newApp) {
+        const start = Date.now();
+        this.generate();
+        console.log(Date.now() - start);
+      }
+    }
   },
   methods: {
-    classInfo(index: number, detail: ClassDetailDto) {
-      return { index: index, detail: detail};
+    classId(id: string) {
+      return "class-" + id;
+    },
+    methodId(id: string) {
+      return "method-" + id;
+    },
+    variableId(id: string) {
+      return "variable-" + id;
+    },
+    addedColor(appVersion: number, version: number): string {
+      return `rgb(0, ${(version / appVersion) * 255}, 0)`;
+    },
+    rowColor(index: number) {
+      return index % 2 == 0 ? "#b2e7e8" : "#d8f3f3";
     },
     generate() {
       const w = 50000;
@@ -111,14 +70,14 @@ export default Vue.extend({
 
       const methodsCalls: { startId: string; endId: string }[] = [];
 
-      d3.select("#moveable-panel").selectChildren().remove();
-      this.svg = d3
+      d3.select("#moveable-panel").select("svg").selectChildren().remove();
+      const svg = d3
         .select("#moveable-panel")
-        .append("svg")
+        .select("svg")
         .attr("width", w)
         .attr("height", h);
 
-      this.svg
+      svg
         .append("defs")
         .append("marker")
         .attr("id", "arrow")
@@ -152,7 +111,7 @@ export default Vue.extend({
           height: classHeight,
         };
 
-        const g = this.svg
+        const g = svg
           .selectAll(`#${this.classId(class1.id!)}`)
           .data([class1])
           .enter()
@@ -390,7 +349,7 @@ export default Vue.extend({
         }
       }
 
-      const gCalls = this.svg.selectAll(`#calls`).enter().append("g");
+      const gCalls = svg.selectAll(`#calls`).enter().append("g");
 
       for (const call of methodsCalls) {
         const start = methodsCoordinates[call.startId];
@@ -405,7 +364,7 @@ export default Vue.extend({
           x: (2 * start.start.x + vectorX / 2) / 2 + c,
           y: (2 * start.start.y + vectorY / 2) / 2 + c * raise,
         };
-        this.svg
+        svg
           .append("path")
           .style("stroke-width", "1")
           .style("stroke", "black")
@@ -422,85 +381,8 @@ export default Vue.extend({
           .attr("marker-end", "url(#arrow)");
       }
     },
-    classId(id: string) {
-      return "class-" + id;
-    },
-    methodId(id: string) {
-      return "method-" + id;
-    },
-    variableId(id: string) {
-      return "variable-" + id;
-    },
-    addedColor(appVersion: number, version: number): string {
-      return `rgb(0, ${(version / appVersion) * 255}, 0)`;
-    },
-    rowColor(index: number) {
-      return index % 2 == 0 ? "#b2e7e8" : "#d8f3f3";
-    },
-    moveTo(elementRef: string): any {
-      const panzoom = this.$refs.panzoom as any;
-      const panzoomInstance = panzoom?.$panZoomInstance;
-      var metaInfo = this.classesMetaInfo[elementRef];
-
-      if (!metaInfo) return;
-      if (panzoom && panzoomInstance) {
-        panzoomInstance.pause();
-
-        const parentContainer = panzoom.$el.getBoundingClientRect();
-        const scale = panzoomInstance.getTransform().scale;
-        panzoomInstance.smoothMoveTo(
-          -(metaInfo.coords.x + metaInfo.width / 2) * scale +
-            parentContainer.width / 2,
-          -(metaInfo.coords.y + metaInfo.height / 2) * scale +
-            parentContainer.height / 2
-        );
-
-        panzoomInstance.resume();
-      }
-      return;
-    },
   },
 });
 </script>
 <style lang="scss">
-.class {
-  &-container {
-    width: 300px;
-    height: 50px;
-    position: absolute;
-    border-top: 5px solid transparent;
-    border-left: 5px solid transparent;
-    border-right: 5px solid transparent;
-
-    &__selected {
-      border-top: 5px solid yellow;
-      border-left: 5px solid yellow;
-      border-right: 5px solid yellow;
-    }
-  }
-
-  &-content {
-    line-height: 1rem;
-    margin-left: 0;
-    padding-left: 0;
-    text-align: left;
-  }
-}
-
-.bullet-image {
-  //list-style-image: url("~@/assets/images/method.png");
-}
-
-// #moveable-panel {
-//   width: 500px;
-//   height: 500px;
-// }
-
-.panel {
-  width: 100vw;
-  height: 90vh;
-  position: relative;
-  margin: auto;
-  overflow: hidden;
-}
 </style>
