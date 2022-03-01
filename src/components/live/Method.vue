@@ -1,25 +1,22 @@
-<template>
-  <svg :id="id(class1.detail.id)">
-  </svg>
-</template>
+
 <script lang="ts">
 import Vue from "vue";
 import * as d3 from "d3";
-import { ClassDetailDto } from "@/models";
+import { ClassDetailDto, MethodDetailDto } from "@/models";
 
 interface Coordinate {
   x: number;
   y: number;
 }
 
-interface Class {
-  detail: ClassDetailDto;
+interface Method {
+  detail: MethodDetailDto;
   index: number;
   appAddedOn: number;
 }
 
 export default Vue.extend({
-  name: "class",
+  name: "method",
   props: {
     svg: {
       type: Object as () => d3.Selection<
@@ -30,10 +27,13 @@ export default Vue.extend({
       >,
       required: true,
     },
-    class1: {
-      type: Object as () => Class,
+    method: {
+      type: Object as () => Method,
       required: true,
     },
+  },
+  render: function (h) {
+    return h(); // avoid warning message
   },
   components: {},
   data: () => ({}),
@@ -41,13 +41,7 @@ export default Vue.extend({
   watch: {},
   methods: {
     id(id: string) {
-      return "class-" + id;
-    },
-    methodId(id: string) {
       return "method-" + id;
-    },
-    variableId(id: string) {
-      return "variable-" + id;
     },
     addedColor(appVersion: number, version: number): string {
       return `rgb(0, ${(version / appVersion) * 255}, 0)`;
@@ -56,7 +50,7 @@ export default Vue.extend({
       return index % 2 == 0 ? "#b2e7e8" : "#d8f3f3";
     },
   },
-  beforeUpdate() {
+  mounted() {
     const titleRowHeight = 30;
     const rowHeight = 20;
     const cornerRadius = 6;
@@ -70,8 +64,8 @@ export default Vue.extend({
     const classPadding = 10;
     const classWidthWithPadding = classWidth + classPadding * 2;
     const classHeight =
-      ((this.class1.detail.variables?.length ?? 0) +
-        (this.class1.detail.methods?.length ?? 0) +
+      ((this.method.detail.variables?.length ?? 0) +
+        (this.method.detail.methods?.length ?? 0) +
         2) *
         rowHeight +
       titleRowHeight;
@@ -85,8 +79,11 @@ export default Vue.extend({
     //   height: classHeight,
     // };
 
-    const g = d3
-      .select(`#${this.id(this.class1.detail.id!)}`)
+    const g = this.svg
+      .selectAll(`#${this.id(this.class1.detail.id!)}`)
+      .data([this.class1.detail])
+      .enter()
+      .append("g")
       .attr("transform", `translate(${classX},${classY})`)
       .attr("id", this.id(this.class1.detail.id!));
 
@@ -99,7 +96,9 @@ export default Vue.extend({
       .attr("ry", cornerRadius);
 
     g.append("text")
-      .text(this.class1.detail.name!)
+      .text(function (d) {
+        return d.name!;
+      })
       .style("fill", "black")
       .style("font-size", "1.5rem")
       .style("text-anchor", "middle")
