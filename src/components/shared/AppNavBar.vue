@@ -8,9 +8,11 @@
       ></b-form-select>
       <b-form-select
         v-model="project.versionNumber"
-        :options="$store.state.navbar.projectVersionsOptions"
+        :options="projectVersions"
         @change="changeProjectVersion"
       ></b-form-select>
+      <b-button v-if="!isPlaying" :disabled="!playEnabled" @click="play">Play</b-button>
+      <b-button v-else @click="stop">Stop</b-button>
       <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
       <b-collapse id="nav-collapse" is-nav>
         <b-navbar-nav class="ml-auto">
@@ -35,17 +37,25 @@
 
 <script lang="ts">
 import { routeMap } from "@/router";
+import { timeout } from "d3-timer";
 import { Vue } from "vue-property-decorator";
 
 export default Vue.extend({
   name: "NavBar",
 
   data: () => ({
+    isPlaying: false,
   }),
   computed: {
-    project() {
+    project(): { id: string; versionNumber: number } {
       return this.$store.state.live.project;
-    }
+    },
+    projectVersions(): { value: string; text: string }[] {
+      return this.$store.state.navbar.projectVersionsOptions;
+    },
+    playEnabled(): boolean {
+      return !!this.project.id && this.projectVersions.length != 0;
+    },
   },
 
   methods: {
@@ -54,10 +64,34 @@ export default Vue.extend({
       this.$router.push(routeMap.login.location);
     },
     async changeProject() {
-      await this.$store.dispatch("live/changeProject", { projectId: this.project.id, versionNumber: this.project.versionNumber });
+      await this.$store.dispatch("live/changeProject", {
+        projectId: this.project.id,
+        versionNumber: this.project.versionNumber,
+      });
     },
     async changeProjectVersion() {
-      await this.$store.dispatch("live/changeProjectVersion", { versionNumber: this.project.versionNumber });
+      await this.$store.dispatch("live/changeProjectVersion", {
+        versionNumber: this.project.versionNumber,
+      });
+    },
+    async play() {
+      this.isPlaying = true;
+
+      if (this.playEnabled) {
+        timeout(async () => {
+          for (const version of this.projectVersions.reverse()) {
+            await this.$store.dispatch("live/changeProjectVersion", {
+              versionNumber: version.value,
+              disableLoadingLayer: true,
+            });
+
+            if (!this.isPlaying) break;
+          }
+        });
+      }
+    },
+    async stop() {
+      this.isPlaying = false;
     },
   },
 });

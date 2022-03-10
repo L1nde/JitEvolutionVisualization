@@ -7,7 +7,7 @@ import { Module } from "vuex";
 import RootState from "../rootstate";
 
 class State {
-  project: { id: string | null, versionNumber: number | null } =  {id: null, versionNumber: null };
+  project: { id: string | null, versionNumber: number | null } = { id: null, versionNumber: null };
   fileUri: string | null = null;
   app: null | AppDetailDto = null;
   coordinates: { [id: number]: { start: Coordinate, end: Coordinate } } = {};
@@ -96,24 +96,26 @@ export default {
 
       await dispatch("navbar/loadProjectVersionsOptions", body.projectId, { root: true });
     },
-    async changeProjectVersion({ commit, dispatch, state }, body: { versionNumber: number | null }) {
+    async changeProjectVersion({ commit, dispatch, state }, body: { versionNumber: number | null, disableLoadingLayer?: boolean }) {
       commit("changeProject", {
         projectId: state.project.id,
         versionNumber: body.versionNumber
       });
-      await dispatch("loadProject");
+      await dispatch("loadProject", body.disableLoadingLayer);
       commit("focus", null);
     },
-    async loadProject({ commit, dispatch, state }) {
+    async loadProject({ commit, dispatch, state }, disableLoadingLayer?: boolean) {
       try {
-        commit("setIsLoading", true);
+        if (!disableLoadingLayer)
+          commit("setIsLoading", true);
         commit("saveApp", {
           app: await API.app.get(state.project.id!, state.project.versionNumber),
         });
         commit("focus", null);
       }
       finally {
-        commit("setIsLoading", false);
+        if (!disableLoadingLayer)
+          commit("setIsLoading", false);
       }
     },
 
@@ -127,23 +129,23 @@ export default {
       commit("saveRelationship", body);
     },
     async addOverlayComponent({ commit }, body: { overlayComponent: OverlayComponent }) {
-      commit("addOverlayComponent", body );
+      commit("addOverlayComponent", body);
     },
     async removeOverlayComponent({ commit }, body: { id: string }) {
       commit("removeOverlayComponent", body);
     },
-    async addRelationshipToOverlayComponent({ commit, state }, overlayComponent: OverlayComponent ) {
-      const relationships = state.relationships.filter(x => x.startId.toString() == overlayComponent.id ||  x.endId.toString() == overlayComponent.id);
-      
-      for(const r of relationships){
-        commit("addOverlayComponent", { id: r.id, position: overlayComponent.position, initiator: overlayComponent.initiator }); 
+    async addRelationshipToOverlayComponent({ commit, state }, overlayComponent: OverlayComponent) {
+      const relationships = state.relationships.filter(x => x.startId.toString() == overlayComponent.id || x.endId.toString() == overlayComponent.id);
+
+      for (const r of relationships) {
+        commit("addOverlayComponent", { id: r.id, position: overlayComponent.position, initiator: overlayComponent.initiator });
       }
     },
-    async removeRelationshipFromOverlayComponent({ commit, state }, body: { id: string, initiator: string } ) {
-      const relationships = state.relationships.filter(x => x.startId.toString() == body.id ||  x.endId.toString() == body.id);
-      
-      for(const r of relationships){
-        commit("removeOverlayComponent", { id: r.id, initiator: body.initiator }); 
+    async removeRelationshipFromOverlayComponent({ commit, state }, body: { id: string, initiator: string }) {
+      const relationships = state.relationships.filter(x => x.startId.toString() == body.id || x.endId.toString() == body.id);
+
+      for (const r of relationships) {
+        commit("removeOverlayComponent", { id: r.id, initiator: body.initiator });
       }
     },
   },
