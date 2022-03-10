@@ -81,17 +81,17 @@ export default {
       });
 
       connection.on(Messages.FILE_OPENED, (projectId, fileUri) => {
-        // If the socket says we're unautheticated, notify and log out
         dispatch("live/focus", { projectId, fileUri }, { root: true });
       });
 
       connection.on(Messages.PROJECT_ADDED, () => {
-        // If the socket says we're unautheticated, notify and log out
         dispatch("navbar/init", null, { root: true });
       });
 
       connection.on(Messages.PROJECT_UPDATED, () => {
-        // If the socket says we're unautheticated, notify and log out
+        console.log(rootState);
+        dispatch("navbar/loadProjectVersionsOptions", rootState.live.project.id, { root: true });
+        dispatch("live/changeProjectVersion", { versionNumber: null }, { root: true });
         dispatch("live/loadProject", null, { root: true });
       });
 

@@ -8,9 +8,15 @@ export default class AppApi extends BaseApi {
     return this._get<AppDto[]>(this.baseRoute);
   }
 
-  get(id: string) {
+  getProjectVersions(projectId: string) {
+    return this._get<number[]>(`${this.baseRoute}/version-number`, {
+      params: { projectId: projectId },
+    });
+  }
+
+  get(id: string, versionNumber: number | null) {
     return this._get<AppDetailDto>(`${this.baseRoute}`, {
-      params: { projectId: id },
+      params: { projectId: id, versionNumber: versionNumber },
     });
   }
 }

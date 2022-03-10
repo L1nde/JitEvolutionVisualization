@@ -70,6 +70,7 @@ export interface MethodDetailDto {
     code?: string | null;
     cyclomaticComplexity?: number;
     endLine?: number;
+    modifier?: string | null;
     isConstructor?: boolean;
     isSetter?: boolean;
     isGetter?: boolean;
@@ -86,6 +87,7 @@ export interface MethodDetailDto {
     versionNumber?: number;
     addedOn?: number;
     calls?: string[] | null;
+    uses?: string[] | null;
 }
 
 export interface MethodDto {

@@ -4,6 +4,7 @@ import RootState from "../rootstate";
 
 class State {
   projectsOptions: { value: string; text: string }[] = [];
+  projectVersionsOptions: { value: string; text: string }[] = [];
 }
 
 export default {
@@ -20,6 +21,12 @@ export default {
     ) {
       state.projectsOptions = projectsOptions;
     },
+    projectVersionsOptions(
+      state: State,
+      projectVersionsOptions: { value: string; text: string }[]
+    ) {
+      state.projectVersionsOptions = projectVersionsOptions;
+    },
   },
   actions: {
     async init({ commit, rootState }) {
@@ -32,6 +39,15 @@ export default {
           })
         );
       }
+    },
+    async loadProjectVersionsOptions({ commit }, projectId: string) {
+      const projectVersions = await API.app.getProjectVersions(projectId);
+        commit(
+          "projectVersionsOptions",
+          projectVersions.map((x) => {
+            return { value: x!, text: x };
+          })
+        );
     },
   },
 } as Module<State, RootState>;

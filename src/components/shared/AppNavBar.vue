@@ -2,9 +2,14 @@
   <div>
     <b-navbar sticky toggleable="md" variant="primary">
       <b-form-select
-        v-model="$store.state.live.projectId"
+        v-model="project.id"
         :options="$store.state.navbar.projectsOptions"
         @change="changeProject"
+      ></b-form-select>
+      <b-form-select
+        v-model="project.versionNumber"
+        :options="$store.state.navbar.projectVersionsOptions"
+        @change="changeProjectVersion"
       ></b-form-select>
       <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
       <b-collapse id="nav-collapse" is-nav>
@@ -29,23 +34,30 @@
 </template>
 
 <script lang="ts">
-import API from "@/api";
-import { ProjectDto } from "@/models";
 import { routeMap } from "@/router";
 import { Vue } from "vue-property-decorator";
 
 export default Vue.extend({
   name: "NavBar",
 
-  data: () => ({}),
+  data: () => ({
+  }),
+  computed: {
+    project() {
+      return this.$store.state.live.project;
+    }
+  },
 
   methods: {
     async logOut() {
       await this.$store.dispatch("user/logout");
       this.$router.push(routeMap.login.location);
     },
-    async changeProject(value: string) {
-      await this.$store.dispatch("live/changeProject", { projectId: value });
+    async changeProject() {
+      await this.$store.dispatch("live/changeProject", { projectId: this.project.id, versionNumber: this.project.versionNumber });
+    },
+    async changeProjectVersion() {
+      await this.$store.dispatch("live/changeProjectVersion", { versionNumber: this.project.versionNumber });
     },
   },
 });
