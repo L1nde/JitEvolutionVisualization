@@ -41,7 +41,7 @@ export default Vue.extend({
     fileUri(): string {
       return this.$store.state.live.fileUri;
     },
-    isLoading() {
+    isLoading(): boolean {
       return this.$store.state.live.isLoading;
     }
   },

@@ -35,7 +35,7 @@ export default Vue.extend({
     fill: "none",
   }),
   computed: {
-    controlPoint() {
+    controlPoint(): Coordinate {
       const c = 10;
       const vectorX = this.end.x - this.start.x;
       const vectorY = this.end.y - this.start.y;
@@ -45,20 +45,17 @@ export default Vue.extend({
         y: (2 * this.start.y + vectorY / 2) / 2 + c * raise,
       };
     },
-    strokeWidth() {
+    strokeWidth(): number {
       if (this.isHighlighted) return 2;
       return 1;
     },
-    stroke() {
+    stroke(): string {
       if (this.isHighlighted) return "black";
       return "#919191";
     },
   },
   watch: {},
   methods: {
-    d(i: number) {
-      return;
-    },
   },
 });
 </script>
