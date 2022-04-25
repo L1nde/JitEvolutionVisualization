@@ -16,6 +16,7 @@ export default {
     async init({ commit, dispatch }) {
       await dispatch("user/init");
       await dispatch("navbar/init");
+      await dispatch("live/init");
       commit("ready");
     },
   },

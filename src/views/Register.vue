@@ -1,5 +1,5 @@
 <template>
-  <div class="login-page">
+  <div class="register-page">
     <b-row>
       <b-col
         cols="12"
@@ -7,7 +7,7 @@
         md="5"
         xl="4"
         align-self="center"
-        class="login-container"
+        class="register-container"
       >
         <b-card bg-variant="secondary" text-variant="white">
           <b-alert variant="danger" :show="!!error">{{ error }}</b-alert>
@@ -17,7 +17,21 @@
             :show="loading"
             rounded="sm"
           >
-            <b-form class="login-container__form" @submit.prevent="submit">
+            <b-form class="register-container__form" @submit.prevent="submit">
+              <b-form-group
+                label-class="text-left"
+                id="email-group"
+                label="Email:"
+                label-for="username"
+              >
+                <b-form-input
+                  id="email"
+                  v-model="registerInfo.email"
+                  type="text"
+                  placeholder="Email"
+                  required
+                />
+              </b-form-group>
               <b-form-group
                 label-class="text-left"
                 id="username-group"
@@ -26,7 +40,7 @@
               >
                 <b-form-input
                   id="username"
-                  v-model="loginInfo.username"
+                  v-model="registerInfo.username"
                   type="text"
                   placeholder="Username"
                   required
@@ -40,14 +54,28 @@
               >
                 <b-form-input
                   id="password"
-                  v-model="loginInfo.password"
+                  v-model="registerInfo.password"
+                  type="password"
+                  placeholder="Password"
+                  required
+                />
+              </b-form-group>
+              <b-form-group
+                label-class="text-left"
+                id="password-group"
+                label="Repeat password:"
+                label-for="password"
+              >
+                <b-form-input
+                  id="password"
+                  v-model="confirmPassword"
                   type="password"
                   placeholder="Password"
                   required
                 />
               </b-form-group>
               <b-button :disabled="loading" type="submit" variant="primary"
-                >Login</b-button
+                >Register</b-button
               >
             </b-form>
             <template #overlay>
@@ -61,7 +89,6 @@
               </div>
             </template>
           </b-overlay>
-          <router-link to="register">Create new account</router-link>
         </b-card>
       </b-col>
     </b-row>
@@ -69,22 +96,30 @@
 </template>
 
 <script lang="ts">
-import { PasswordLoginDto } from "@/models";
+import API from "@/api";
+import { RegisterDto } from "@/models";
 import { routeMap } from "@/router";
 import { Component, Vue } from "vue-property-decorator";
 
 @Component({})
-export default class Login extends Vue {
-  private loginInfo: PasswordLoginDto = {};
+export default class Register extends Vue {
+  private registerInfo: RegisterDto = { username: "", password: "", email: "" };
+  private confirmPassword: string | null = null;
   private loading = false;
   private error: string | null = null;
 
   async submit() {
     this.loading = true;
     try {
-      await this.$store.dispatch("user/login", this.loginInfo);
+      if (this.confirmPassword != this.registerInfo.password){
+        this.error = "Invalid repeated password"
+      }
+      else {
+      await API.user.register(this.registerInfo);
+      await this.$store.dispatch("user/login", this.registerInfo);
       this.error = null;
       this.$router.push(routeMap.live.location);
+      }
     } catch (error: any) {
       this.error = error?.response?.data?.Title;
     } finally {
@@ -95,7 +130,7 @@ export default class Login extends Vue {
 </script>
 
 <style lang="scss" scoped>
-.login-page {
+.register-page {
   background-image: url("~@/assets/images/evolution.gif");
   background-size: contain;
   background-color: #1d3382;
@@ -106,7 +141,7 @@ export default class Login extends Vue {
     margin: 0px;
   }
 }
-.login-container {
+.register-container {
   display: flex;
   flex-direction: column;
   margin: auto;

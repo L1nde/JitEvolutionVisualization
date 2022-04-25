@@ -11,7 +11,9 @@
         :options="projectVersions"
         @change="changeProjectVersion"
       ></b-form-select>
-      <b-button v-if="!isPlaying" :disabled="!playEnabled" @click="play">Play</b-button>
+      <b-button v-if="!isPlaying" :disabled="!playEnabled" @click="play"
+        >Play</b-button
+      >
       <b-button v-else @click="stop">Stop</b-button>
       <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
       <b-collapse id="nav-collapse" is-nav>
@@ -23,10 +25,13 @@
             right
           >
             <template #button-content> User </template>
+            <b-dropdown-item @click="copyAccessKeyToClipboard"
+              >Access key</b-dropdown-item
+            >
             <b-dropdown-item
               active-class="l-dropdown__menu-item"
               @click="logOut"
-              >Logi välja</b-dropdown-item
+              >Log out</b-dropdown-item
             >
           </b-nav-item-dropdown>
         </b-navbar-nav>
@@ -39,6 +44,7 @@
 import { routeMap } from "@/router";
 import { timeout } from "d3-timer";
 import { Vue } from "vue-property-decorator";
+import { notify } from "@/components/notifications";
 
 export default Vue.extend({
   name: "NavBar",
@@ -56,9 +62,21 @@ export default Vue.extend({
     playEnabled(): boolean {
       return !!this.project.id && this.projectVersions.length != 0;
     },
+    accessKey() {
+      return this.$store.state.user.user.accessKey;
+    }
   },
 
   methods: {
+    copyAccessKeyToClipboard() {
+      try {
+        navigator.clipboard.writeText(this.accessKey);
+        notify.success(`Access key copied`, undefined, { duration: 1000 });
+      }
+      catch{
+        notify.error(`Failed to copy access key`, undefined, { duration: 1000 });
+      }
+    },
     async logOut() {
       await this.$store.dispatch("user/logout");
       this.$router.push(routeMap.login.location);

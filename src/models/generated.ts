@@ -147,6 +147,12 @@ export interface QueryDto {
     statements?: StatementDto[] | null;
 }
 
+export interface QueueItemDto {
+    projectId?: string | null;
+    isActive?: boolean;
+    changedAtUtc?: string;
+}
+
 export interface RegisterDto {
     username: string;
     password: string;
@@ -182,6 +188,7 @@ export interface StatementDto {
 export interface UserDto {
     id?: string;
     username?: string | null;
+    accessKey?: string | null;
 }
 
 export interface UserTokenDto {

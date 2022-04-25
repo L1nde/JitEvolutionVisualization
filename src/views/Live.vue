@@ -1,5 +1,6 @@
 <template>
   <div>
+    <in-progress-analysis />
     <loading-layer :isLoading="isLoading" />
     <div class="panel">
       <PanZoomComponent
@@ -22,6 +23,7 @@ import { AppDetailDto, ClassDetailDto } from "@/models";
 import PanZoomComponent from "@/components/pan-zoom/component.vue";
 import { AppSvg } from "@/components/live";
 import {LoadingLayer} from "@/components/shared";
+import {InProgressAnalysis} from "@/components/live";
 
 export default Vue.extend({
   name: "Live",
@@ -29,7 +31,8 @@ export default Vue.extend({
   components: {
     PanZoomComponent,
     AppSvg,
-    LoadingLayer
+    LoadingLayer,
+    InProgressAnalysis
   },
 
   data: () => ({

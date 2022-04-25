@@ -1,5 +1,5 @@
 import API from "@/api";
-import { AppDetailDto, Coordinate } from "@/models";
+import { AppDetailDto, Coordinate, QueueItemDto } from "@/models";
 import { OverlayComponent } from "@/models/overlay-component";
 import { xml } from "d3";
 import { stat } from "fs";
@@ -14,6 +14,7 @@ class State {
   relationships: { id: string, startId: number, endId: number, isHighlighted: boolean, highlightInitiator?: string }[] = [];
   overlayComponents: OverlayComponent[] = [];
   isLoading = false;
+  queueItems: null | QueueItemDto[] = [];
 }
 
 export default {
@@ -41,6 +42,12 @@ export default {
       body: { app: AppDetailDto }
     ) {
       state.app = body.app;
+    },
+    saveQueueItems(
+      state: State,
+      body: QueueItemDto[]
+    ) {
+      state.queueItems = body;
     },
     saveCoordinates(
       state: State,
@@ -78,6 +85,15 @@ export default {
     },
   },
   actions: {
+    async init({ dispatch }) {
+      await dispatch("loadQueueItems");
+    },
+    async loadQueueItems({ commit, rootState }) {
+      if (rootState.user.user?.id) {
+        const queueItems = await API.queueItem.getAll();
+        commit("saveQueueItems", queueItems);
+      }
+    },
     async focus(
       { commit, state },
       body: { projectId: string; fileUri: string }

@@ -8,7 +8,7 @@ Vue.use(Vuex);
 
 const store = new Vuex.Store(root);
 
-const unauthenticatedRoutes: string[] = [routeMap.login.name];
+const unauthenticatedRoutes: string[] = [routeMap.login.name, routeMap.register.name];
 
 // move into utils
 function isNullOrUndefined(value: any): value is null | undefined {

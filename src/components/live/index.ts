@@ -7,5 +7,6 @@ import MethodDetailSvg from "./MethodDetailSvg.vue";
 import MethodSvg from "./MethodSvg.vue";
 import ClassSvg from "./ClassSvg.vue";
 import AppSvg from "./AppSvg.vue";
+import InProgressAnalysis from "./InProgressAnalysis.vue";
 
-export { ClassSvg, AppSvg, VariableSvg, MethodSvg, PrependIconSvg, RelationshipSvg, MethodDetailSvg, ButtonSvg, VariableDetailSvg };
+export { ClassSvg, AppSvg, VariableSvg, MethodSvg, PrependIconSvg, RelationshipSvg, MethodDetailSvg, ButtonSvg, VariableDetailSvg, InProgressAnalysis };

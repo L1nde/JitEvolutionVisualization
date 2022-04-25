@@ -4,6 +4,7 @@ import { Module } from "vuex";
 import API from "@/api";
 import router, { routeMap } from "@/router";
 import RootState from "@/store/rootstate";
+import { notify } from "@/components/notifications";
 
 const WEB_SOCKET_RECONNECT_TIMEOUT = 5000;
 const WEB_SOCKET_RECONNECT_MAX_ATTEMPTS = 12;
@@ -12,7 +13,7 @@ enum Messages {
   UNAUTHENTICATED = "Unauthenticated",
   FILE_OPENED = "FileOpened",
   PROJECT_ADDED = "ProjectAdded",
-
+  PROJECT_UPDATING = "ProjectUpdating",
   PROJECT_UPDATED = "ProjectUpdated",
 }
 
@@ -88,11 +89,19 @@ export default {
         dispatch("navbar/init", null, { root: true });
       });
 
-      connection.on(Messages.PROJECT_UPDATED, () => {
-        console.log(rootState);
-        dispatch("navbar/loadProjectVersionsOptions", rootState.live.project.id, { root: true });
-        dispatch("live/changeProjectVersion", { versionNumber: null }, { root: true });
-        dispatch("live/loadProject", null, { root: true });
+      connection.on(Messages.PROJECT_UPDATING, (projectId) => {
+        notify.success(`${projectId} analysis started!`, undefined, { duration: 1000 });
+        dispatch("live/loadQueueItems", null, { root: true });
+      });
+
+      connection.on(Messages.PROJECT_UPDATED, (projectId) => {
+        notify.success(`${projectId} analysis finished!`, undefined, { duration: 1000 });
+        if (rootState.live.project.id === projectId){
+          dispatch("navbar/loadProjectVersionsOptions", rootState.live.project.id, { root: true });
+          dispatch("live/changeProjectVersion", { versionNumber: null }, { root: true });
+          dispatch("live/loadProject", null, { root: true });
+        }
+        dispatch("live/loadQueueItems", null, { root: true });
       });
 
       connection.onclose((error) => {

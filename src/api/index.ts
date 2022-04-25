@@ -4,6 +4,7 @@ import { Store } from "vuex";
 import UserApi from "./modules/identities/user";
 import AppApi from "./modules/analyzer/app";
 import WebsocketApi from "./modules/websocket";
+import QueueItemApi from "./modules/queue/queueItem";
 
 const API = new (class API {
   private instance: AxiosInstance;
@@ -11,6 +12,8 @@ const API = new (class API {
   public websocket: WebsocketApi;
   public user: UserApi;
   public app: AppApi;
+  public queueItem: QueueItemApi;
+  
   constructor() {
     this.instance = axios.create({
       baseURL: baseRoute,
@@ -24,6 +27,7 @@ const API = new (class API {
     );
     this.user = new UserApi(this.instance);
     this.app = new AppApi(this.instance);
+    this.queueItem = new QueueItemApi(this.instance);
   }
 
   public configureInterceptors(store: Store<any>) {
