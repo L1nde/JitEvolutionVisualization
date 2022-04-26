@@ -26,7 +26,7 @@ export default {
       Object.assign(state, new State());
     },
     focus(state: State, fileUri: string) {
-      state.fileUri = fileUri;
+      state.fileUri = fileUri.replaceAll("\\", "/");
     },
     changeProject(
       state: State,

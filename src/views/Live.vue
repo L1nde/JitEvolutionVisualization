@@ -52,7 +52,7 @@ export default Vue.extend({
     fileUri(newFileUri: string, oldFileUri: string) {
       const selectedClassId = 
         this.$store.state.live.app?.classes?.find((x: ClassDetailDto) =>
-          x.path?.endsWith(newFileUri)
+          x.path?.replaceAll("\\", "/").endsWith(newFileUri)
         )?.id;
       this.moveTo(selectedClassId);
     },
