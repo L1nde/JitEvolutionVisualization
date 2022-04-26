@@ -15,6 +15,7 @@ enum Messages {
   PROJECT_ADDED = "ProjectAdded",
   PROJECT_UPDATING = "ProjectUpdating",
   PROJECT_UPDATED = "ProjectUpdated",
+  QUEUE_ITEM_ADDED = "QueueItemAdded",
 }
 
 class State {
@@ -91,6 +92,10 @@ export default {
 
       connection.on(Messages.PROJECT_UPDATING, (projectId) => {
         notify.success(`${projectId} analysis started!`, undefined, { duration: 1000 });
+        dispatch("live/loadQueueItems", null, { root: true });
+      });
+
+      connection.on(Messages.QUEUE_ITEM_ADDED, () => {
         dispatch("live/loadQueueItems", null, { root: true });
       });
 
